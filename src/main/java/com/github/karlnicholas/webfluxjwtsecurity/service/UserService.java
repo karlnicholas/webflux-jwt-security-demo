@@ -36,10 +36,10 @@ public class UserService {
                 .enabled(true)
                 .createdAt(LocalDateTime.now())
                 .build())
-                .doOnSuccess(u -> log.info("Created new user with ID = " + u.getId()));
+                .doOnSuccess(u -> log.info("Created new user with username = " + u.getUsername()));
     }
 
-    public Mono<User> getUser(Long userId) {
-        return userRepository.findById(userId);
+    public Mono<User> getUser(String username) {
+        return userRepository.findByUsername(username);
     }
 }

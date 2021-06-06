@@ -6,7 +6,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.github.karlnicholas.webfluxjwtsecurity.configuration.security.auth.UserPrincipal;
 import com.github.karlnicholas.webfluxjwtsecurity.dto.UserDto;
 import com.github.karlnicholas.webfluxjwtsecurity.dto.mapper.UserMapper;
 import com.github.karlnicholas.webfluxjwtsecurity.service.UserService;
@@ -33,9 +32,7 @@ public class UserController {
 
     @GetMapping
     public Mono<UserDto> get(Authentication authentication) {
-        var principal = (UserPrincipal) authentication.getPrincipal();
-
-        return userService.getUser(principal.getId())
+        return userService.getUser((String)authentication.getPrincipal())
                 .map(user -> userMapper.map(user));
     }
 }

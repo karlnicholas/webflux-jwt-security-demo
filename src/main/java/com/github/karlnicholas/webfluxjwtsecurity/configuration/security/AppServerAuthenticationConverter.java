@@ -8,9 +8,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.web.server.authentication.ServerAuthenticationConverter;
 import org.springframework.web.server.ServerWebExchange;
-
-import com.github.karlnicholas.webfluxjwtsecurity.configuration.security.auth.UserPrincipal;
 
 import reactor.core.publisher.Mono;
 
@@ -26,24 +25,21 @@ import java.util.stream.Collectors;
  * @author Erik Amaru Ortiz
  * @author Karl Nicholas
  */
-public class ServerHttpAuthenticationConverter implements Function<ServerWebExchange, Mono<Authentication>> {
-	Logger log = LoggerFactory.getLogger(ServerHttpAuthenticationConverter.class);
+public class AppServerAuthenticationConverter implements ServerAuthenticationConverter {
+	Logger log = LoggerFactory.getLogger(AppServerAuthenticationConverter.class);
     private final Function<ServerWebExchange, String> extractTokenFunction;
     private final JwtParser jwtParser;
-    public ServerHttpAuthenticationConverter(JwtParser jwtParser, Function<ServerWebExchange, String> extractTokenFunction) {
+    public AppServerAuthenticationConverter(JwtParser jwtParser, Function<ServerWebExchange, String> extractTokenFunction) {
     	this.jwtParser = jwtParser;
     	this.extractTokenFunction = extractTokenFunction;
     }
-
-    @Override
-    public Mono<Authentication> apply(ServerWebExchange serverWebExchange) {
-    	return Mono.just(create(serverWebExchange))
+	@Override
+	public Mono<Authentication> convert(ServerWebExchange exchange) {
+    	return Mono.just(create(exchange))
     			.filter(Optional::isPresent)
-				.map(Optional::get)
-//				.switchIfEmpty(Mono.error(new CredentialException("bnoken")))
-				;
-    }
-
+				.map(Optional::get);
+	}
+    
 	private Optional<Authentication> create(ServerWebExchange serverWebExchange) {
 		try {
 	    	Claims claims = (Claims) jwtParser.parse(extractTokenFunction.apply(serverWebExchange)).getBody();
@@ -53,14 +49,12 @@ public class ServerHttpAuthenticationConverter implements Function<ServerWebExch
 	        var authorities = roles.stream()
 	                .map(SimpleGrantedAuthority::new)
 	                .collect(Collectors.toList());
-
-	        var principal = new UserPrincipal(Long.parseLong(subject), claims.getIssuer());
-	        return Optional.of(new UsernamePasswordAuthenticationToken(principal, null, authorities));
+	        return Optional.of(new UsernamePasswordAuthenticationToken(subject, null, authorities));
 		} catch ( Throwable t) {
 			if ( t.getMessage() != null )
-				log.error(t.getMessage());
+				log.warn(t.getMessage());
 			return Optional.empty();
 		}
     }
-    
+
 }

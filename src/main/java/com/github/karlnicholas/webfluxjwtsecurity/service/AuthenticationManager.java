@@ -6,8 +6,6 @@ import org.springframework.security.authentication.ReactiveAuthenticationManager
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 
-import com.github.karlnicholas.webfluxjwtsecurity.configuration.security.auth.UserPrincipal;
-
 import reactor.core.publisher.Mono;
 
 /**
@@ -27,10 +25,8 @@ public class AuthenticationManager implements ReactiveAuthenticationManager {
 
     @Override
     public Mono<Authentication> authenticate(Authentication authentication) {
-        var principal = (UserPrincipal) authentication.getPrincipal();
-
         //TODO add more user validation logic here.
-        return userService.getUser(principal.getId())
+        return userService.getUser((String)authentication.getPrincipal())
                 .filter(user -> user.isEnabled())
                 .switchIfEmpty(Mono.error(new AccountLockedException ("User account is disabled.")))
                 .map(user -> authentication);

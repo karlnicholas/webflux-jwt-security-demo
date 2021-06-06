@@ -1,4 +1,4 @@
-package com.github.karlnicholas.webfluxjwtsecurity.configuration.security.auth;
+package com.github.karlnicholas.webfluxjwtsecurity.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -18,7 +18,7 @@ import java.util.Date;
 @NoArgsConstructor
 @AllArgsConstructor
 public class TokenInfo {
-    private Long userId;
+    private String userId;
     private String token;
     private Date issuedAt;
     private Date expiresAt;

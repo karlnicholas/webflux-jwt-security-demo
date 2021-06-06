@@ -13,6 +13,9 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import javax.security.auth.login.AccountLockedException;
+import javax.security.auth.login.FailedLoginException;
+
 /**
  * AppErrorAttributes class
  *
@@ -34,20 +37,12 @@ public class AppErrorAttributes extends DefaultErrorAttributes {
 
         var errorList = new ArrayList<Map<String, Object>>();
 
-//        if (error instanceof AuthException || error instanceof UnauthorizedException) {
-//            status = HttpStatus.UNAUTHORIZED;
-//            var errorMap = new LinkedHashMap<String, Object>();
-//            errorMap.put("code", ((ApiException) error).getErrorCode());
-//            errorMap.put("message", error.getMessage());
-//            errorList.add(errorMap);
-//        } else if (error instanceof ApiException) {
-//            status = HttpStatus.BAD_REQUEST;
-//            var errorMap = new LinkedHashMap<String, Object>();
-//            errorMap.put("code", ((ApiException) error).getErrorCode());
-//            errorMap.put("message", error.getMessage());
-//            errorList.add(errorMap);
-//        } else 
-    	if (error instanceof ExpiredJwtException || error instanceof SecurityException || error instanceof MalformedJwtException) {
+        if (error instanceof ExpiredJwtException 
+        		|| error instanceof SecurityException 
+        		|| error instanceof MalformedJwtException
+        		|| error instanceof AccountLockedException
+        		|| error instanceof FailedLoginException
+		) {
             status = HttpStatus.UNAUTHORIZED;
             var errorMap = new LinkedHashMap<String, Object>();
             errorMap.put("code", "UNAUTHORIZED");

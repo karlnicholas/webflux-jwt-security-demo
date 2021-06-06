@@ -101,16 +101,14 @@ public class WebSecurityConfig {
     AuthenticationWebFilter bearerAuthenticationFilter(AuthenticationManager authManager) {
         AuthenticationWebFilter bearerAuthenticationFilter = new AuthenticationWebFilter(authManager);
         bearerAuthenticationFilter.setServerAuthenticationConverter( 
-        		new ServerHttpAuthenticationConverter(
+        		new AppServerAuthenticationConverter(
         				jwtParser, 
-        				serverWebExchange->{
-        					return serverWebExchange
-        							.getRequest()
-        							.getHeaders()
-        							.getFirst(HttpHeaders.AUTHORIZATION)
-        							.substring(BEARER.length());
-        				}
-				)::apply 
+        				serverWebExchange->serverWebExchange
+        				.getRequest()
+						.getHeaders()
+						.getFirst(HttpHeaders.AUTHORIZATION)
+						.substring(BEARER.length())
+				)
     		);
         bearerAuthenticationFilter.setRequiresAuthenticationMatcher(ServerWebExchangeMatchers.pathMatchers("/**"));
 
@@ -120,10 +118,14 @@ public class WebSecurityConfig {
     AuthenticationWebFilter cookieAuthenticationFilter(AuthenticationManager authManager) {
         AuthenticationWebFilter cookieAuthenticationFilter = new AuthenticationWebFilter(authManager);
         cookieAuthenticationFilter.setServerAuthenticationConverter( 
-        		new ServerHttpAuthenticationConverter(
+        		new AppServerAuthenticationConverter(
         				jwtParser, 
-        				serverWebExchange->serverWebExchange.getRequest().getCookies().getFirst("X-Session-Id").getValue()
-				)::apply 
+        				serverWebExchange->serverWebExchange
+        				.getRequest()
+        				.getCookies()
+        				.getFirst("X-Session-Id")
+        				.getValue()
+				) 
     		);
         cookieAuthenticationFilter.setRequiresAuthenticationMatcher(ServerWebExchangeMatchers.pathMatchers("/**"));
 

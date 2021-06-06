@@ -24,12 +24,12 @@ import java.util.List;
 public class User {
     @Id
     private Long id;
-    private String username;
-    private String password;
-    private List<String> roles;
+	private String username;
+	private String password;
+	private List<String> roles;
     private String firstName;
     private String lastName;
-    private boolean enabled;
+	private boolean enabled;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }
