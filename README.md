@@ -1,5 +1,6 @@
 Spring Webflux JWT Security Demo
 ================================
+Original code from [eriknyk/webflux-jwt-security-demo](https://github.com/eriknyk/webflux-jwt-security-demo) 
 
 The motivation for this demo, is just because it is very difficult to find a complete implementation
 of spring webflux + security + jwt + r2db all in one functional implementation, all that you can find in internet are incomplete, not functional 
@@ -8,7 +9,7 @@ That's why I did it and wanted to share it to anybody that is needing it.
 
 Any improvement, fix, contribution are welcome.  
 
-Happy codding!!
+Happy coding!!
 
 ## What this demo has?
 - Spring webflux
@@ -16,36 +17,8 @@ Happy codding!!
 - User register demo endpoint
 - User authentication endpoint
 - Model to dto mapping (using mapstruct)
-- User R2db with Postgresql repository impl
+- User R2db with H2 repository impl
 - User validation in spring security layer, according to the user record in db 
-
-## Data base setup
-- If you don't have installed Postgresql locally you can just run it with docker
-
-```bash
-docker-compose -f src/main/docker/docker-compose.yml up -d
-```
-
-## Create db and Users table
-just execute the sql script located in `src/resources/schema/database.sql` or copy teh following sentences:
-
-```sql
-CREATE DATABASE "webflux-security";
-
-CREATE TABLE users
-(
-    id         SERIAL PRIMARY KEY,
-    username   VARCHAR(64),
-    password   VARCHAR(64),
-    roles      TEXT[],
-    first_name VARCHAR(64),
-    last_name  VARCHAR(64),
-    enabled    BOOLEAN,
-    created_at TIMESTAMP,
-    updated_at TIMESTAMP
-);
-```
-
 
 ## Create demo user
 
