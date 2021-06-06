@@ -7,6 +7,8 @@ of spring webflux + security + jwt + r2db all in one functional implementation, 
 or very older examples, I didn't find any complete example like this from official spring examples neither.
 That's why I did it and wanted to share it to anybody that is needing it.
 
+That being said, the [OAuth 2.0 JOSE](https://docs.spring.io/spring-security/site/docs/current/reference/html5/#spring-security-oauth2-jose) seems to have all this stuff worked out all in spring. 
+
 Any improvement, fix, contribution are welcome.  
 
 Happy coding!!
