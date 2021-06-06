@@ -1,4 +1,4 @@
-package com.github.karlnicholas.webfluxjwtsecurity.configuration.security;
+package com.github.karlnicholas.webfluxjwtsecurity.configuration;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtParser;

@@ -4,7 +4,7 @@ import javax.security.auth.login.AccountLockedException;
 
 import org.springframework.security.authentication.ReactiveAuthenticationManager;
 import org.springframework.security.core.Authentication;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import reactor.core.publisher.Mono;
 
@@ -15,7 +15,7 @@ import reactor.core.publisher.Mono;
  * @author Erik Amaru Ortiz
  * @author Karl Nicholas
  */
-@Component
+@Service
 public class AuthenticationManager implements ReactiveAuthenticationManager {
     private final UserService userService;
 

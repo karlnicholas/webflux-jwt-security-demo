@@ -1,4 +1,4 @@
-package com.github.karlnicholas.webfluxjwtsecurity.app;
+package com.github.karlnicholas.webfluxjwtsecurity.error;
 
 import org.springframework.boot.autoconfigure.web.WebProperties;
 import org.springframework.boot.autoconfigure.web.reactive.error.AbstractErrorWebExceptionHandler;

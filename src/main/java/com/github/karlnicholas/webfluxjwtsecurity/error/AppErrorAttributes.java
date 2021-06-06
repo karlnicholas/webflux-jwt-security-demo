@@ -1,4 +1,4 @@
-package com.github.karlnicholas.webfluxjwtsecurity.app;
+package com.github.karlnicholas.webfluxjwtsecurity.error;
 
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.MalformedJwtException;

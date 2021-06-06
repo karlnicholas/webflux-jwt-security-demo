@@ -2,7 +2,7 @@ package com.github.karlnicholas.webfluxjwtsecurity.service;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
@@ -16,7 +16,7 @@ import java.util.Base64;
  * @author Erik Amaru Ortiz
  * @author Karl Nicholas
  */
-@Component
+@Service
 public class PBKDF2Encoder implements PasswordEncoder {
 
     @Value("${jwt.password.encoder.secret}")
