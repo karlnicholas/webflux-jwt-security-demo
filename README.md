@@ -25,7 +25,7 @@ Happy coding!!
 ## Create demo user
 
 ```bash
-curl http://localhost:9000/public/demo-user \
+curl http://localhost:8080/public/demo-user \
   -X POST \
   -H 'Content-Type: application/json' \
   -d '{
@@ -38,7 +38,7 @@ curl http://localhost:9000/public/demo-user \
 
 ## Authenticate and get a valid JWT token
 ```bash
-curl http://localhost:9000/login \
+curl http://localhost:8080/login \
   -X POST \
   -H 'Content-Type: application/json' \
   -d '{
@@ -61,7 +61,7 @@ API Response
 (!) Use jwt token obtained previously 
 
 ```bash
-curl http://localhost:9000/user \
+curl http://localhost:8080/user \
   -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIiwicm9sZSI6WyJST0xFX1VTRVIiXSwiaXNzIjoiYWRtaW4iLCJleHAiOjE2MTgwMjI4ODQsImlhdCI6MTYxNzk5NDA4NCwianRpIjoiODUzNTAwNDUtYjNjNy00MTA3LWIyZjUtOGEwNDUyNjVmZWM5In0.okhxY7BsK3S3ABNMJlm1WhGdjssy676d6bNkZ3ybN34' | json_pp
 ```
 

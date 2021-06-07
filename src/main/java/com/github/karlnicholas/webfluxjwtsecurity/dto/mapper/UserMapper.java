@@ -15,11 +15,11 @@ import com.github.karlnicholas.webfluxjwtsecurity.model.User;
  */
 @Mapper(componentModel = "spring")
 public interface UserMapper {
-    UserDto map(User user);
+    UserDto mapToUser(User user);
 
     @InheritInverseConfiguration
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "roles", ignore = true)
-    User map(UserDto userDto);
+    User mapToDto(UserDto userDto);
 }

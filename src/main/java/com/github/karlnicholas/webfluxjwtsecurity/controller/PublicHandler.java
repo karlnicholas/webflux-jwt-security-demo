@@ -22,9 +22,9 @@ public class PublicHandler {
 
 	public Mono<ServerResponse> handleDemoUser(ServerRequest serverRequest) {
 		return ServerResponse.ok().body(serverRequest.bodyToMono(UserDto.class)
-				.map(userMapper::map)
+				.map(userMapper::mapToDto)
 				.flatMap(userService::createUser)
-				.map(userMapper::map), UserDto.class);
+				.map(userMapper::mapToUser), UserDto.class);
 	}
 	public Mono<ServerResponse> handleVersion(ServerRequest serverRequest) {
 		return ServerResponse.ok().bodyValue("Verion 1.0.0");

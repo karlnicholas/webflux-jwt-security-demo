@@ -66,7 +66,7 @@ public class AuthService {
 			.flatMap(user->{
 				if (!user.isEnabled())
 					return Mono.error(new AccountLockedException("Account disabled."));
-				if (!passwordEncoder.encode(userLogin.getPassword()).equals(user.getPassword()))
+				if (!passwordEncoder.matches(userLogin.getPassword(), user.getPassword()))
 					return Mono.error(new FailedLoginException("Failed Login!"));
 				return Mono.just(generateAccessToken(user).toBuilder()
 					.userId(user.getId())

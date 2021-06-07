@@ -31,7 +31,7 @@ public class UserHandler {
                 .map(SecurityContext::getAuthentication)
                 .map(Authentication::getName)
                 .flatMap(userService::getUser)
-                .map(userMapper::map), UserDto.class);
+                .map(userMapper::mapToUser), UserDto.class);
 	}
 
 }
