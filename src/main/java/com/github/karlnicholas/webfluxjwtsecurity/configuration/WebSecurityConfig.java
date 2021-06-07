@@ -4,6 +4,7 @@ import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
 
 import java.security.Key;
+import java.util.function.Function;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,6 +20,7 @@ import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.security.web.server.authentication.AuthenticationWebFilter;
 import org.springframework.security.web.server.util.matcher.ServerWebExchangeMatchers;
+import org.springframework.web.server.ServerWebExchange;
 
 import com.github.karlnicholas.webfluxjwtsecurity.service.AuthenticationManager;
 
@@ -74,62 +76,32 @@ public class WebSecurityConfig {
                         return Mono.fromRunnable(() -> swe.getResponse().setStatusCode(HttpStatus.FORBIDDEN));
                     })
                 .and()
-                .addFilterAt(bearerAuthenticationFilter(authManager), SecurityWebFiltersOrder.AUTHENTICATION)
-                .addFilterAt(cookieAuthenticationFilter(authManager), SecurityWebFiltersOrder.AUTHENTICATION)
-                .build();
-    }
-
-    /**
-     * Spring security works by filter chaining.
-     * We need to add a JWT CUSTOM FILTER to the chain.
-     *
-     * what is AuthenticationWebFilter:
-     *
-     *  A WebFilter that performs authentication of a particular request. An outline of the logic:
-     *  A request comes in and if it does not match setRequiresAuthenticationMatcher(ServerWebExchangeMatcher),
-     *  then this filter does nothing and the WebFilterChain is continued.
-     *  If it does match then... An attempt to convert the ServerWebExchange into an Authentication is made.
-     *  If the result is empty, then the filter does nothing more and the WebFilterChain is continued.
-     *  If it does create an Authentication...
-     *  The ReactiveAuthenticationManager specified in AuthenticationWebFilter(ReactiveAuthenticationManager) is used to perform authentication.
-     *  If authentication is successful, ServerAuthenticationSuccessHandler is invoked and the authentication is set on ReactiveSecurityContextHolder,
-     *  else ServerAuthenticationFailureHandler is invoked
-     *
-     */
-    private static final String BEARER = "Bearer ";
-
-    AuthenticationWebFilter bearerAuthenticationFilter(AuthenticationManager authManager) {
-        AuthenticationWebFilter bearerAuthenticationFilter = new AuthenticationWebFilter(authManager);
-        bearerAuthenticationFilter.setServerAuthenticationConverter( 
-        		new AppServerAuthenticationConverter(
-        				jwtParser, 
-        				serverWebExchange->serverWebExchange
-        				.getRequest()
-						.getHeaders()
-						.getFirst(HttpHeaders.AUTHORIZATION)
-						.substring(BEARER.length())
-				)
-    		);
-        bearerAuthenticationFilter.setRequiresAuthenticationMatcher(ServerWebExchangeMatchers.pathMatchers("/**"));
-
-        return bearerAuthenticationFilter;
-    }
-
-    AuthenticationWebFilter cookieAuthenticationFilter(AuthenticationManager authManager) {
-        AuthenticationWebFilter cookieAuthenticationFilter = new AuthenticationWebFilter(authManager);
-        cookieAuthenticationFilter.setServerAuthenticationConverter( 
-        		new AppServerAuthenticationConverter(
-        				jwtParser, 
+                .addFilterAt(createAuthenticationFilter(
+                		authManager, 
+                		serverWebExchange->serverWebExchange
+                		.getRequest()
+                		.getHeaders()
+                		.getFirst(HttpHeaders.AUTHORIZATION)
+                		.substring(BEARER.length())
+            		), SecurityWebFiltersOrder.AUTHENTICATION)
+                .addFilterAt(createAuthenticationFilter(
+                		authManager, 
         				serverWebExchange->serverWebExchange
         				.getRequest()
         				.getCookies()
         				.getFirst("X-Session-Id")
         				.getValue()
-				) 
-    		);
-        cookieAuthenticationFilter.setRequiresAuthenticationMatcher(ServerWebExchangeMatchers.pathMatchers("/**"));
+            		), SecurityWebFiltersOrder.AUTHENTICATION)
+                .build();
+    }
 
-        return cookieAuthenticationFilter;
+    private static final String BEARER = "Bearer ";
+
+    AuthenticationWebFilter createAuthenticationFilter(AuthenticationManager authManager, Function<ServerWebExchange, String> extractTokenFunction) {
+        AuthenticationWebFilter authenticationFilter = new AuthenticationWebFilter(authManager);
+        authenticationFilter.setServerAuthenticationConverter( new AppServerAuthenticationConverter(jwtParser, extractTokenFunction));
+        authenticationFilter.setRequiresAuthenticationMatcher(ServerWebExchangeMatchers.pathMatchers("/**"));
+        return authenticationFilter;
     }
 
 }
