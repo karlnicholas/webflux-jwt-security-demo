@@ -4,6 +4,7 @@ import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
 
 import java.security.Key;
+import java.util.Optional;
 import java.util.function.Function;
 
 import org.slf4j.Logger;
@@ -11,7 +12,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.config.annotation.method.configuration.EnableReactiveMethodSecurity;
@@ -76,28 +76,12 @@ public class WebSecurityConfig {
                         return Mono.fromRunnable(() -> swe.getResponse().setStatusCode(HttpStatus.FORBIDDEN));
                     })
                 .and()
-                .addFilterAt(createAuthenticationFilter(
-                		authManager, 
-                		serverWebExchange->serverWebExchange
-                		.getRequest()
-                		.getHeaders()
-                		.getFirst(HttpHeaders.AUTHORIZATION)
-                		.substring(BEARER.length())
-            		), SecurityWebFiltersOrder.AUTHENTICATION)
-                .addFilterAt(createAuthenticationFilter(
-                		authManager, 
-        				serverWebExchange->serverWebExchange
-        				.getRequest()
-        				.getCookies()
-        				.getFirst("X-Session-Id")
-        				.getValue()
-            		), SecurityWebFiltersOrder.AUTHENTICATION)
+                .addFilterAt(createAuthenticationFilter(authManager, AppServerAuthenticationConverter::getBearerToken), SecurityWebFiltersOrder.AUTHENTICATION)
+                .addFilterAt(createAuthenticationFilter(authManager, AppServerAuthenticationConverter::getCookieToken), SecurityWebFiltersOrder.AUTHENTICATION)
                 .build();
     }
 
-    private static final String BEARER = "Bearer ";
-
-    AuthenticationWebFilter createAuthenticationFilter(AuthenticationManager authManager, Function<ServerWebExchange, String> extractTokenFunction) {
+    AuthenticationWebFilter createAuthenticationFilter(AuthenticationManager authManager, Function<ServerWebExchange, Optional<String>> extractTokenFunction) {
         AuthenticationWebFilter authenticationFilter = new AuthenticationWebFilter(authManager);
         authenticationFilter.setServerAuthenticationConverter( new AppServerAuthenticationConverter(jwtParser, extractTokenFunction));
         authenticationFilter.setRequiresAuthenticationMatcher(ServerWebExchangeMatchers.pathMatchers("/**"));

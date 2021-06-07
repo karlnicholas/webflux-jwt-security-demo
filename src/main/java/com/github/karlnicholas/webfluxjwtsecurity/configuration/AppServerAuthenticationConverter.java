@@ -5,6 +5,8 @@ import io.jsonwebtoken.JwtParser;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpCookie;
+import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -27,9 +29,9 @@ import java.util.stream.Collectors;
  */
 public class AppServerAuthenticationConverter implements ServerAuthenticationConverter {
 	Logger log = LoggerFactory.getLogger(AppServerAuthenticationConverter.class);
-    private final Function<ServerWebExchange, String> extractTokenFunction;
+    private final Function<ServerWebExchange, Optional<String>> extractTokenFunction;
     private final JwtParser jwtParser;
-    public AppServerAuthenticationConverter(JwtParser jwtParser, Function<ServerWebExchange, String> extractTokenFunction) {
+    public AppServerAuthenticationConverter(JwtParser jwtParser, Function<ServerWebExchange, Optional<String>> extractTokenFunction) {
     	this.jwtParser = jwtParser;
     	this.extractTokenFunction = extractTokenFunction;
     }
@@ -40,14 +42,16 @@ public class AppServerAuthenticationConverter implements ServerAuthenticationCon
     
 	private Optional<Authentication> create(ServerWebExchange serverWebExchange) {
 		try {
-	    	Claims claims = (Claims) jwtParser.parse(extractTokenFunction.apply(serverWebExchange)).getBody();
-	        var subject = claims.getSubject();
-	        @SuppressWarnings("unchecked")
-			List<String> roles = claims.get("role", List.class);
-	        var authorities = roles.stream()
-	                .map(SimpleGrantedAuthority::new)
-	                .collect(Collectors.toList());
-	        return Optional.of(new UsernamePasswordAuthenticationToken(subject, null, authorities));
+			return extractTokenFunction.apply(serverWebExchange).map(token->{
+		    	Claims claims = (Claims) jwtParser.parse(token).getBody();
+		        var subject = claims.getSubject();
+		        @SuppressWarnings("unchecked")
+				List<String> roles = claims.get("role", List.class);
+		        var authorities = roles.stream()
+		                .map(SimpleGrantedAuthority::new)
+		                .collect(Collectors.toList());
+		        return new UsernamePasswordAuthenticationToken(subject, null, authorities);
+			});
 		} catch ( Throwable t) {
 			if ( t.getMessage() != null )
 				log.warn(t.getMessage());
@@ -55,4 +59,26 @@ public class AppServerAuthenticationConverter implements ServerAuthenticationCon
 		}
     }
 
+    private static final String BEARER = "Bearer ";
+
+	public static Optional<String> getBearerToken(ServerWebExchange serverWebExchange) {
+        String token = serverWebExchange.getRequest()
+        		.getHeaders()
+        		.getFirst(HttpHeaders.AUTHORIZATION);
+        if ( token == null )
+        	return Optional.empty();
+        if ( token.length() <= BEARER.length() )
+        	return Optional.empty();
+        return Optional.of(token.substring(BEARER.length()));
+	}
+
+	public static Optional<String> getCookieToken(ServerWebExchange serverWebExchange) {
+			HttpCookie cookie = serverWebExchange
+				.getRequest()
+				.getCookies()
+				.getFirst("X-Session-Id");
+		if ( cookie == null )
+        	return Optional.empty();
+        return Optional.of(cookie.getValue());
+	}
 }
