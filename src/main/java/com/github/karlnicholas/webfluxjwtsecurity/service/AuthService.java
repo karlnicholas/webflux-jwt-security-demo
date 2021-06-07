@@ -55,6 +55,7 @@ public class AuthService {
 
         return AuthResultDto.builder()
                 .token(token)
+                .username(user.getUsername())
                 .issuedAt(createdDate)
                 .expiresAt(expirationDate)
                 .build();
@@ -68,9 +69,7 @@ public class AuthService {
 					return Mono.error(new AccountLockedException("Account disabled."));
 				if (!passwordEncoder.matches(userLogin.getPassword(), user.getPassword()))
 					return Mono.error(new FailedLoginException("Failed Login!"));
-				return Mono.just(generateAccessToken(user).toBuilder()
-					.userId(user.getId())
-					.build());
+				return Mono.just(generateAccessToken(user));
 			});
 		})
 		.switchIfEmpty(Mono.error(new FailedLoginException("Failed Login!")));

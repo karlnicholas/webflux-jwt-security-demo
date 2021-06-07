@@ -35,9 +35,7 @@ public class AppServerAuthenticationConverter implements ServerAuthenticationCon
     }
 	@Override
 	public Mono<Authentication> convert(ServerWebExchange exchange) {
-    	return Mono.just(create(exchange))
-    			.filter(Optional::isPresent)
-				.map(Optional::get);
+    	return Mono.justOrEmpty(create(exchange));
 	}
     
 	private Optional<Authentication> create(ServerWebExchange serverWebExchange) {

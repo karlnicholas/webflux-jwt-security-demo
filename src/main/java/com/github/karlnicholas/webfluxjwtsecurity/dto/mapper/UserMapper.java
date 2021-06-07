@@ -18,6 +18,7 @@ public interface UserMapper {
     UserDto mapToUser(User user);
 
     @InheritInverseConfiguration
+    @Mapping(target = "id", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "roles", ignore = true)

@@ -14,11 +14,11 @@ import java.util.Date;
  * @author Karl Nicholas
  */
 @Data
-@Builder(toBuilder = true)
+@Builder
 @AllArgsConstructor
 @NoArgsConstructor
 public class AuthResultDto {
-    private Long userId;
+    private String username;
     private String token;
     private Date issuedAt;
     private Date expiresAt;
