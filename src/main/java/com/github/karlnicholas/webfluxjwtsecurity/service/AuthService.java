@@ -25,7 +25,7 @@ import javax.security.auth.login.FailedLoginException;
  * @author Karl Nicholas
  */
 @Service
-public class LoginService {
+public class AuthService {
 	private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final Key secretKey;
@@ -33,7 +33,7 @@ public class LoginService {
     @Value("${jwt.expiration}")
     private String defaultExpirationTimeInSecondsConf;
 
-    public LoginService(Key secretKey, UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public AuthService(Key secretKey, UserRepository userRepository, PasswordEncoder passwordEncoder) {
     	this.secretKey = secretKey;
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;

@@ -6,15 +6,15 @@ import org.springframework.web.reactive.function.server.ServerResponse;
 
 import com.github.karlnicholas.webfluxjwtsecurity.dto.AuthResultDto;
 import com.github.karlnicholas.webfluxjwtsecurity.dto.UserLoginDto;
-import com.github.karlnicholas.webfluxjwtsecurity.service.LoginService;
+import com.github.karlnicholas.webfluxjwtsecurity.service.AuthService;
 
 import reactor.core.publisher.Mono;
 
 @Component
 public class AuthHandler {
-    private final LoginService loginService;
+    private final AuthService loginService;
 
-    public AuthHandler(LoginService loginService) {
+    public AuthHandler(AuthService loginService) {
         this.loginService = loginService;
     }
 
