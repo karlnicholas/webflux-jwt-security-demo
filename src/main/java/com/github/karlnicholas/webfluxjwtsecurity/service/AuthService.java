@@ -12,7 +12,7 @@ import com.github.karlnicholas.webfluxjwtsecurity.model.UserRepository;
 
 import reactor.core.publisher.Mono;
 
-import java.security.Key;
+import java.security.PrivateKey;
 import java.util.*;
 
 import javax.security.auth.login.AccountLockedException;
@@ -28,13 +28,13 @@ import javax.security.auth.login.FailedLoginException;
 public class AuthService {
 	private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    private final Key secretKey;
+    private final PrivateKey privateKey;
 
     @Value("${jwt.expiration}")
     private String defaultExpirationTimeInSecondsConf;
 
-    public AuthService(Key secretKey, UserRepository userRepository, PasswordEncoder passwordEncoder) {
-    	this.secretKey = secretKey;
+    public AuthService(PrivateKey privateKey, UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    	this.privateKey = privateKey;
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
     }
@@ -50,7 +50,7 @@ public class AuthService {
                 .setSubject(user.getUsername())
                 .setIssuedAt(createdDate)
                 .setExpiration(expirationDate)
-                .signWith(secretKey)
+                .signWith(privateKey)
                 .compact();
 
         return AuthResultDto.builder()

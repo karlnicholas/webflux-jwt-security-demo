@@ -3,7 +3,7 @@ package com.github.karlnicholas.webfluxjwtsecurity.configuration;
 import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
 
-import java.security.Key;
+import java.security.PublicKey;
 import java.util.Optional;
 import java.util.function.Function;
 
@@ -46,8 +46,8 @@ public class WebSecurityConfig {
     @Value("${app.public_routes}")
     private String[] publicRoutes;
     
-    public WebSecurityConfig(Key secretKey, UserService userService) {
-    	this.jwtParser = Jwts.parserBuilder().setSigningKey(secretKey).build();
+    public WebSecurityConfig(PublicKey publicKey, UserService userService) {
+    	this.jwtParser = Jwts.parserBuilder().setSigningKey(publicKey).build();
         this.userService = userService;
     }
     
