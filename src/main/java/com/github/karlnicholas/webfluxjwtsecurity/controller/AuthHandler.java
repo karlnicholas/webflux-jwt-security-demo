@@ -12,13 +12,13 @@ import reactor.core.publisher.Mono;
 
 @Component
 public class AuthHandler {
-    private final AuthService loginService;
+    private final AuthService authService;
 
-    public AuthHandler(AuthService loginService) {
-        this.loginService = loginService;
+    public AuthHandler(AuthService authService) {
+        this.authService = authService;
     }
 
 	public Mono<ServerResponse> handleLogin(ServerRequest serverRequest) {
-		return ServerResponse.ok().body(loginService.authenticate(serverRequest.bodyToMono(UserLoginDto.class)), AuthResultDto.class);
+		return ServerResponse.ok().body(authService.authenticate(serverRequest.bodyToMono(UserLoginDto.class)), AuthResultDto.class);
 	}
 }
