@@ -54,7 +54,7 @@ public class AppServerAuthenticationConverter implements ServerAuthenticationCon
 				if ( !valid) {
 					return null;
 				}
-				net.minidev.json.JSONArray jsonArray = (net.minidev.json.JSONArray) signedJWT.getJWTClaimsSet().getClaim("role");
+				com.nimbusds.jose.shaded.json.JSONArray jsonArray = (com.nimbusds.jose.shaded.json.JSONArray) signedJWT.getJWTClaimsSet().getClaim("role");
 				SimpleGrantedAuthority simpleGrantedAuthority = new SimpleGrantedAuthority((String) jsonArray.get(0));
 
 		        return new UsernamePasswordAuthenticationToken(signedJWT.getJWTClaimsSet().getSubject(), null, Collections.singletonList(simpleGrantedAuthority));
