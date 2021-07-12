@@ -7,3 +7,4 @@ app:
   public_routes: /login,/public/**,/version,/status,/actuator/**
 jwt:
   expiration: 28800 # token expiration in seconds
+  shared_secret_hex: E2FB6DA4A40395B82D47EA72507F01E1679F9EAF8D31B8B3747D8D8ABF7610A8
