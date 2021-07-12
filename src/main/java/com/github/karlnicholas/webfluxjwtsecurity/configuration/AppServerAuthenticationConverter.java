@@ -1,8 +1,5 @@
 package com.github.karlnicholas.webfluxjwtsecurity.configuration;
 
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.JwtParser;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpCookie;
@@ -13,12 +10,18 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.web.server.authentication.ServerAuthenticationConverter;
 import org.springframework.web.server.ServerWebExchange;
 
+import com.nimbusds.jose.JOSEException;
+import com.nimbusds.jose.JWSVerifier;
+import com.nimbusds.jose.crypto.MACVerifier;
+import com.nimbusds.jwt.SignedJWT;
+
 import reactor.core.publisher.Mono;
 
-import java.util.List;
+import java.text.ParseException;
+import java.util.Collections;
+import java.util.Date;
 import java.util.Optional;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 /**
  * ServerHttpBearerAuthenticationConverter class
@@ -30,9 +33,9 @@ import java.util.stream.Collectors;
 public class AppServerAuthenticationConverter implements ServerAuthenticationConverter {
 	Logger log = LoggerFactory.getLogger(AppServerAuthenticationConverter.class);
     private final Function<ServerWebExchange, Optional<String>> extractTokenFunction;
-    private final JwtParser jwtParser;
-    public AppServerAuthenticationConverter(JwtParser jwtParser, Function<ServerWebExchange, Optional<String>> extractTokenFunction) {
-    	this.jwtParser = jwtParser;
+    private final JWSVerifier verifier;
+    public AppServerAuthenticationConverter(byte[] sharedSecret, Function<ServerWebExchange, Optional<String>> extractTokenFunction) throws JOSEException {
+		verifier = new MACVerifier(sharedSecret);
     	this.extractTokenFunction = extractTokenFunction;
     }
 	@Override
@@ -41,22 +44,26 @@ public class AppServerAuthenticationConverter implements ServerAuthenticationCon
 	}
     
 	private Optional<Authentication> create(ServerWebExchange serverWebExchange) {
-		try {
-			return extractTokenFunction.apply(serverWebExchange).map(token->{
-		    	Claims claims = (Claims) jwtParser.parse(token).getBody();
-		        var subject = claims.getSubject();
-		        @SuppressWarnings("unchecked")
-				List<String> roles = claims.get("role", List.class);
-		        var authorities = roles.stream()
-		                .map(SimpleGrantedAuthority::new)
-		                .collect(Collectors.toList());
-		        return new UsernamePasswordAuthenticationToken(subject, null, authorities);
-			});
-		} catch ( Throwable t) {
-			if ( t.getMessage() != null )
-				log.warn(t.getMessage());
-			return Optional.empty();
-		}
+		return extractTokenFunction.apply(serverWebExchange).map(token->{
+			// On the consumer side, parse the JWS and verify its HMAC
+			try {
+				SignedJWT signedJWT = SignedJWT.parse(token);
+				boolean valid = true;
+				valid &= signedJWT.verify(verifier);
+				valid &= new Date().before(signedJWT.getJWTClaimsSet().getExpirationTime());
+				if ( !valid) {
+					return null;
+				}
+				net.minidev.json.JSONArray jsonArray = (net.minidev.json.JSONArray) signedJWT.getJWTClaimsSet().getClaim("role");
+				SimpleGrantedAuthority simpleGrantedAuthority = new SimpleGrantedAuthority((String) jsonArray.get(0));
+
+		        return new UsernamePasswordAuthenticationToken(signedJWT.getJWTClaimsSet().getSubject(), null, Collections.singletonList(simpleGrantedAuthority));
+			} catch (ParseException | JOSEException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			return null;
+		});
     }
 
     private static final String BEARER = "Bearer ";

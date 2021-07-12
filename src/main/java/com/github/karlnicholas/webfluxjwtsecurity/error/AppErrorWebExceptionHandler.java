@@ -16,8 +16,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.server.*;
 
-import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.MalformedJwtException;
+import com.nimbusds.jose.JOSEException;
 
 /**
  * AppErrorWebExceptionHandler class
@@ -37,9 +36,8 @@ public class AppErrorWebExceptionHandler extends AbstractErrorWebExceptionHandle
     protected RouterFunction<ServerResponse> getRoutingFunction(final ErrorAttributes errorAttributes) {
         return RouterFunctions.route(POST("/login"), request -> {
             var error = getError(request);
-            if (error instanceof ExpiredJwtException 
-            		|| error instanceof SecurityException 
-            		|| error instanceof MalformedJwtException
+            if (error instanceof SecurityException 
+            		|| error instanceof JOSEException
             		|| error instanceof AccountLockedException
             		|| error instanceof FailedLoginException
     		) {
