@@ -1,7 +1,6 @@
 package com.github.karlnicholas.webfluxjwtsecurity.controller;
 
 import java.text.ParseException;
-import java.util.Optional;
 
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.server.ServerRequest;

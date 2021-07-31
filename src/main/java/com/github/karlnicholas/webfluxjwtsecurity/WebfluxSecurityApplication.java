@@ -18,16 +18,16 @@ import io.r2dbc.spi.ConnectionFactory;
  */
 @SpringBootApplication
 public class WebfluxSecurityApplication {
+	
 	public static void main(String[] args) {
 		SpringApplication.run(WebfluxSecurityApplication.class, args);
 	}
-    @Bean
-    ConnectionFactoryInitializer initializer(ConnectionFactory connectionFactory) {
 
+	@Bean
+    ConnectionFactoryInitializer initializer(ConnectionFactory connectionFactory) {
         ConnectionFactoryInitializer initializer = new ConnectionFactoryInitializer();
         initializer.setConnectionFactory(connectionFactory);
         initializer.setDatabasePopulator(new ResourceDatabasePopulator(new ClassPathResource("schema.sql")));
-
         return initializer;
     }
 

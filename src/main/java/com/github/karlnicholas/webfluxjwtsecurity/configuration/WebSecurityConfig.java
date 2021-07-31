@@ -2,7 +2,6 @@ package com.github.karlnicholas.webfluxjwtsecurity.configuration;
 
 import java.text.ParseException;
 import java.util.Collections;
-import java.util.Date;
 import java.util.Optional;
 
 import org.slf4j.Logger;
@@ -28,9 +27,6 @@ import org.springframework.web.cors.reactive.CorsConfigurationSource;
 import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
 import org.springframework.web.server.ServerWebExchange;
 
-import com.nimbusds.jose.JOSEException;
-import com.nimbusds.jwt.SignedJWT;
-
 import reactor.core.publisher.Mono;
 
 /**
@@ -41,108 +37,88 @@ import reactor.core.publisher.Mono;
 @Configuration
 @EnableReactiveMethodSecurity
 public class WebSecurityConfig {
-    private final Logger logger = LoggerFactory.getLogger(WebSecurityConfig.class);
+	private final Logger logger = LoggerFactory.getLogger(WebSecurityConfig.class);
 
-    @Value("${app.public_routes}")
-    private String[] publicRoutes;
-    private final JwtProperties jwtProperties;
-    
-    public WebSecurityConfig(JwtProperties jwtProperties) {
-    	this.jwtProperties = jwtProperties;
-    }
-    
-    @Bean
-    public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http, ReactiveAuthenticationManager authManager) {
-        return http
-                .authorizeExchange()
-                    .pathMatchers(HttpMethod.OPTIONS)
-                        .permitAll()
-                    .pathMatchers(publicRoutes)
-                        .permitAll()
-                    .pathMatchers( "/favicon.ico")
-                        .permitAll()
-                    .anyExchange()
-                        .authenticated()
-                    .and()
-                .csrf()
-                    .disable()
-                .httpBasic()
-                    .disable()
-                .formLogin()
-                    .disable()
-                .logout(logout -> logout.requiresLogout(new PathPatternParserServerWebExchangeMatcher("/logout")))
-                .exceptionHandling()
-                    .authenticationEntryPoint((swe, e) -> {
-                        logger.info("[1] Authentication error: Unauthorized[401]: " + e.getMessage());
+	@Value("${app.public_routes}")
+	private String[] publicRoutes;
+	private final JwtProperties jwtProperties;
 
-                        return Mono.fromRunnable(() -> swe.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED));
-                    })
-                    .accessDeniedHandler((swe, e) -> {
-                        logger.info("[2] Authentication error: Access Denied[401]: " + e.getMessage());
+	public WebSecurityConfig(JwtProperties jwtProperties) {
+		this.jwtProperties = jwtProperties;
+	}
 
-                        return Mono.fromRunnable(() -> swe.getResponse().setStatusCode(HttpStatus.FORBIDDEN));
-                    })
-                .and()
-                .addFilterAt(createAuthenticationFilter(authManager), SecurityWebFiltersOrder.AUTHENTICATION)
-                .build();
-    }
+	@Bean
+	public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http, ReactiveAuthenticationManager authManager) {
+		return http
+			.authorizeExchange()
+				.pathMatchers(HttpMethod.OPTIONS)
+					.permitAll()
+				.pathMatchers(publicRoutes)
+					.permitAll()
+				.pathMatchers("/favicon.ico")
+					.permitAll()
+				.anyExchange()
+					.authenticated()
+				.and()
+			.csrf().disable()
+			.httpBasic().disable()
+			.formLogin().disable()
+			.logout(logout -> logout.requiresLogout(new PathPatternParserServerWebExchangeMatcher("/logout")))
+			.exceptionHandling().authenticationEntryPoint((swe, e) -> {
+				logger.info("[1] Authentication error: Unauthorized[401]: " + e.getMessage());
+				return Mono.fromRunnable(() -> swe.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED));
+			}).accessDeniedHandler((swe, e) -> {
+				logger.info("[2] Authentication error: Access Denied[401]: " + e.getMessage());
+				return Mono.fromRunnable(() -> swe.getResponse().setStatusCode(HttpStatus.FORBIDDEN));
+			})
+			.and()
+			.addFilterAt(createAuthenticationFilter(authManager), SecurityWebFiltersOrder.AUTHENTICATION)
+			.build();
+	}
 
-    @Bean
+	@Bean
 	public CorsConfigurationSource corsConfiguration() {
 		CorsConfiguration corsConfig = new CorsConfiguration();
 		corsConfig.applyPermitDefaultValues();
-		corsConfig.addAllowedMethod(HttpMethod.PUT);
-		corsConfig.addAllowedMethod(HttpMethod.DELETE);
 		corsConfig.addAllowedOrigin("http://localhost:3000");
 		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
 		source.registerCorsConfiguration("/**", corsConfig);
 		return source;
 	}
 
-    AuthenticationWebFilter createAuthenticationFilter(ReactiveAuthenticationManager authManager) {
-        AuthenticationWebFilter authenticationFilter = new AuthenticationWebFilter(authManager);
-        authenticationFilter.setServerAuthenticationConverter(exchange->{
-        	return Mono.justOrEmpty(getBearerToken(exchange).map(token->{
-			// On the consumer side, parse the JWS and verify its HMAC
-			try {
-				SignedJWT signedJWT = SignedJWT.parse(token);
-				boolean valid = true;
-				valid &= signedJWT.verify(jwtProperties.getJWSVerifier());
-				valid &= new Date().before(signedJWT.getJWTClaimsSet().getExpirationTime());
-				if ( !valid) {
-					return null;
-				}
-				com.nimbusds.jose.shaded.json.JSONArray jsonArray = (com.nimbusds.jose.shaded.json.JSONArray) signedJWT.getJWTClaimsSet().getClaim("role");
-				SimpleGrantedAuthority simpleGrantedAuthority = new SimpleGrantedAuthority((String) jsonArray.get(0));
-
-		        return new UsernamePasswordAuthenticationToken(signedJWT.getJWTClaimsSet().getSubject(), null, Collections.singletonList(simpleGrantedAuthority));
-			} catch (ParseException | JOSEException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			return null;
-		}));});
-        authenticationFilter.setRequiresAuthenticationMatcher(ServerWebExchangeMatchers.pathMatchers("/**"));
-        return authenticationFilter;
-    }
+	AuthenticationWebFilter createAuthenticationFilter(ReactiveAuthenticationManager authManager) {
+		AuthenticationWebFilter authenticationFilter = new AuthenticationWebFilter(authManager);
+		authenticationFilter.setServerAuthenticationConverter(exchange -> {
+			return Mono.justOrEmpty(getBearerToken(exchange).map(token -> {
+				return jwtProperties.verifyToken(token).map(signedJWT -> {
+					try {
+						com.nimbusds.jose.shaded.json.JSONArray jsonArray = (com.nimbusds.jose.shaded.json.JSONArray) signedJWT.getJWTClaimsSet().getClaim("role");
+						SimpleGrantedAuthority simpleGrantedAuthority = new SimpleGrantedAuthority((String) jsonArray.get(0));
+						return new UsernamePasswordAuthenticationToken(signedJWT.getJWTClaimsSet().getSubject(), null, Collections.singletonList(simpleGrantedAuthority));
+					} catch (ParseException e) {
+						throw new RuntimeException(e);
+					}
+				}).orElseThrow();
+			}).orElseGet(() -> null));
+		});
+		authenticationFilter.setRequiresAuthenticationMatcher(ServerWebExchangeMatchers.pathMatchers("/**"));
+		return authenticationFilter;
+	}
 
 	@Bean
-    public ReactiveAuthenticationManager authenticationManager() {
-    	return Mono::just;
-    }
+	public ReactiveAuthenticationManager authenticationManager() {
+		return Mono::just;
+	}
 
 	private static final String BEARER = "Bearer ";
 
 	public static Optional<String> getBearerToken(ServerWebExchange serverWebExchange) {
-        String token = serverWebExchange.getRequest()
-        		.getHeaders()
-        		.getFirst(HttpHeaders.AUTHORIZATION);
-        if ( token == null )
-        	return Optional.empty();
-        if ( token.length() <= BEARER.length() )
-        	return Optional.empty();
-        return Optional.of(token.substring(BEARER.length()));
+		String token = serverWebExchange.getRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
+		if (token == null)
+			return Optional.empty();
+		if (token.length() <= BEARER.length())
+			return Optional.empty();
+		return Optional.of(token.substring(BEARER.length()));
 	}
-
 
 }

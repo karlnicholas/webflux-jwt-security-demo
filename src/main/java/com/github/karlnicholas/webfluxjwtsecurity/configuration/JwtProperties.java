@@ -68,7 +68,7 @@ public class JwtProperties {
 			SignedJWT signedJWT = SignedJWT.parse(token);
 			boolean valid = true;
 			valid &= signedJWT.verify(getJWSVerifier());
-				valid &= new Date().before(signedJWT.getJWTClaimsSet().getExpirationTime());
+			valid &= new Date().before(signedJWT.getJWTClaimsSet().getExpirationTime());
 			if ( !valid) {
 				return Optional.empty();
 			}
