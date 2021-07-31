@@ -21,7 +21,6 @@ import com.nimbusds.jose.JOSEException;
 /**
  * AppErrorWebExceptionHandler class
  *
- * @author Erik Amaru Ortiz
  * @author Karl Nicholas
  */
 @Component
@@ -34,7 +33,7 @@ public class AppErrorWebExceptionHandler extends AbstractErrorWebExceptionHandle
 
     @Override
     protected RouterFunction<ServerResponse> getRoutingFunction(final ErrorAttributes errorAttributes) {
-        return RouterFunctions.route(POST("/login"), request -> {
+        return RouterFunctions.route(POST("/api/auth/signin"), request -> {
             var error = getError(request);
             if (error instanceof SecurityException 
             		|| error instanceof JOSEException

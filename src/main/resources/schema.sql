@@ -1,8 +1,7 @@
 DROP TABLE IF EXISTS users;
 CREATE TABLE users
 (
-    id         SERIAL PRIMARY KEY,
-    username   VARCHAR(64),
+    username   VARCHAR(64) PRIMARY KEY,
     password   VARCHAR(64),
     roles      ARRAY,
     first_name VARCHAR(64),

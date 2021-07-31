@@ -10,7 +10,6 @@ import java.util.Date;
 /**
  * AuthResultDto class
  *
- * @author Erik Amaru Ortiz
  * @author Karl Nicholas
  */
 @Data

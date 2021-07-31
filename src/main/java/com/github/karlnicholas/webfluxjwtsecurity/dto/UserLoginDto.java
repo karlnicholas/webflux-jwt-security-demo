@@ -5,7 +5,6 @@ import lombok.Data;
 /**
  * UserLoginDto class
  *
- * @author Erik Amaru Ortiz
  * @author Karl Nicholas
  */
 @Data

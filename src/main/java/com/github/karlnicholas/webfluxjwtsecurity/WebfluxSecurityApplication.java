@@ -14,7 +14,6 @@ import io.r2dbc.spi.ConnectionFactory;
 /**
  * WebfluxSecurityApplication class
  *
- * @author Erik Amaru Ortiz
  * @author Karl Nicholas
  */
 @SpringBootApplication
@@ -31,7 +30,7 @@ public class WebfluxSecurityApplication {
 
         return initializer;
     }
-    
+
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();

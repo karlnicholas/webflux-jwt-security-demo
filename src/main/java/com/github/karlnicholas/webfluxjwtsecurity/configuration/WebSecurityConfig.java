@@ -33,7 +33,6 @@ import reactor.core.publisher.Mono;
 /**
  * WebSecurityConfig class
  *
- * @author Erik Amaru Ortiz
  * @author Karl Nicholas
  */
 @Configuration

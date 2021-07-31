@@ -13,7 +13,6 @@ import java.util.List;
 /**
  * User class
  *
- * @author Erik Amaru Ortiz
  * @author Karl Nicholas
  */
 @Data
@@ -23,7 +22,6 @@ import java.util.List;
 @Table("users")
 public class User {
     @Id
-    private Long id;
 	private String username;
 	private String password;
 	private List<String> roles;

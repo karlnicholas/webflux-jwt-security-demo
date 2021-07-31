@@ -10,17 +10,17 @@ import org.springframework.web.reactive.function.server.ServerResponse;
 
 import com.github.karlnicholas.webfluxjwtsecurity.dto.UserDto;
 import com.github.karlnicholas.webfluxjwtsecurity.dto.mapper.UserMapper;
-import com.github.karlnicholas.webfluxjwtsecurity.service.UserService;
+import com.github.karlnicholas.webfluxjwtsecurity.model.UserRepository;
 
 import reactor.core.publisher.Mono;
 
 @Component
 public class UserHandler {
-    private final UserService userService;
+    private final UserRepository userRepository;
     private final UserMapper userMapper;
 
-    public UserHandler(UserService userService, UserMapper userMapper) {
-        this.userService = userService;
+    public UserHandler(UserRepository userRepository, UserMapper userMapper) {
+        this.userRepository = userRepository;
         this.userMapper = userMapper;
     }
 
@@ -30,8 +30,8 @@ public class UserHandler {
                 .switchIfEmpty(Mono.error(new IllegalStateException("No SecurityContext")))
                 .map(SecurityContext::getAuthentication)
                 .map(Authentication::getName)
-                .flatMap(userService::getUser)
-                .map(userMapper::mapToUser), UserDto.class);
+                .flatMap(userRepository::findById)
+                .map(userMapper::mapToDto), UserDto.class);
 	}
 
 }
