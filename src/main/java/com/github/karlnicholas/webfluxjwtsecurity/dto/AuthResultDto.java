@@ -17,7 +17,7 @@ import java.util.Date;
 @AllArgsConstructor
 @NoArgsConstructor
 public class AuthResultDto {
-    private String username;
+    private String user;
     private String token;
     private Date issuedAt;
     private Date expiresAt;

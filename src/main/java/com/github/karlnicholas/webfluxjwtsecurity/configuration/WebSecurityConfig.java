@@ -23,6 +23,9 @@ import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.security.web.server.authentication.AuthenticationWebFilter;
 import org.springframework.security.web.server.util.matcher.PathPatternParserServerWebExchangeMatcher;
 import org.springframework.security.web.server.util.matcher.ServerWebExchangeMatchers;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.reactive.CorsConfigurationSource;
+import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
 import org.springframework.web.server.ServerWebExchange;
 
 import com.nimbusds.jose.JOSEException;
@@ -83,6 +86,18 @@ public class WebSecurityConfig {
                 .addFilterAt(createAuthenticationFilter(authManager), SecurityWebFiltersOrder.AUTHENTICATION)
                 .build();
     }
+
+    @Bean
+	public CorsConfigurationSource corsConfiguration() {
+		CorsConfiguration corsConfig = new CorsConfiguration();
+		corsConfig.applyPermitDefaultValues();
+		corsConfig.addAllowedMethod(HttpMethod.PUT);
+		corsConfig.addAllowedMethod(HttpMethod.DELETE);
+		corsConfig.addAllowedOrigin("http://localhost:3000");
+		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+		source.registerCorsConfiguration("/**", corsConfig);
+		return source;
+	}
 
     AuthenticationWebFilter createAuthenticationFilter(ReactiveAuthenticationManager authManager) {
         AuthenticationWebFilter authenticationFilter = new AuthenticationWebFilter(authManager);

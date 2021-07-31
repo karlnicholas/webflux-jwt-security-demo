@@ -1,5 +1,9 @@
 package com.github.karlnicholas.webfluxjwtsecurity.configuration;
 
+import java.text.ParseException;
+import java.util.Date;
+import java.util.Optional;
+
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Component;
@@ -10,6 +14,7 @@ import com.nimbusds.jose.JWSVerifier;
 import com.nimbusds.jose.KeyLengthException;
 import com.nimbusds.jose.crypto.MACSigner;
 import com.nimbusds.jose.crypto.MACVerifier;
+import com.nimbusds.jwt.SignedJWT;
 
 @Component
 @ConfigurationProperties(prefix = "jwt")
@@ -56,6 +61,23 @@ public class JwtProperties {
     	}
     	return jWSVerifier;
     }
+
+	public Optional<SignedJWT> verifyToken(String token) {
+		// On the consumer side, parse the JWS and verify its HMAC
+		try {
+			SignedJWT signedJWT = SignedJWT.parse(token);
+			boolean valid = true;
+			valid &= signedJWT.verify(getJWSVerifier());
+				valid &= new Date().before(signedJWT.getJWTClaimsSet().getExpirationTime());
+			if ( !valid) {
+				return Optional.empty();
+			}
+	        return Optional.of(signedJWT);
+		} catch (ParseException | JOSEException e) {
+			e.printStackTrace();
+		}
+		return Optional.empty();
+	}
 
 	public Long getExpiration() {
 		return expiration;

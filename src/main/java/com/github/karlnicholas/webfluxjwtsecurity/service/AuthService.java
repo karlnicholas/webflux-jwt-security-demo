@@ -11,6 +11,7 @@ import com.github.karlnicholas.webfluxjwtsecurity.model.UserRepository;
 
 import reactor.core.publisher.Mono;
 
+import java.text.ParseException;
 import java.util.*;
 import javax.security.auth.login.FailedLoginException;
 
@@ -35,17 +36,19 @@ public class AuthService {
 	}
 
 	private AuthResultDto generateAccessToken(User user) {
-		var claims = new HashMap<String, Object>();
-		claims.put("role", user.getRoles());
-		var expirationTimeInMilliseconds = jwtProperties.getExpiration() * 1000;
-		var expirationDate = new Date(new Date().getTime() + expirationTimeInMilliseconds);
-		var createdDate = new Date();
+		long expirationTimeInMilliseconds = jwtProperties.getExpiration() * 1000;
+		Date expirationDate = new Date(new Date().getTime() + expirationTimeInMilliseconds);
+		Date createdDate = new Date();
 
 		try {
 
 			// Prepare JWT with claims set
-			JWTClaimsSet claimsSet = new JWTClaimsSet.Builder().claim("role", user.getRoles())
-					.subject(user.getUsername()).issueTime(createdDate).expirationTime(expirationDate).build();
+			JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
+					.claim("role", user.getRoles())
+					.subject(user.getUsername())
+					.issueTime(createdDate)
+					.expirationTime(expirationDate)
+					.build();
 
 			SignedJWT signedJWT = new SignedJWT(new JWSHeader(JWSAlgorithm.HS256), claimsSet);
 
@@ -56,17 +59,22 @@ public class AuthService {
 			// eyJhbGciOiJIUzI1NiJ9.SGVsbG8sIHdvcmxkIQ.onO9Ihudz3WkiauDO2Uhyuz0Y18UASXlSc1eS0NkWyA
 			String token = signedJWT.serialize();
 
-			return AuthResultDto.builder().token(token).username(user.getUsername()).issuedAt(createdDate)
-					.expiresAt(expirationDate).build();
+			return AuthResultDto.builder()
+					.token(token)
+					.user(user.getUsername())
+					.issuedAt(createdDate)
+					.expiresAt(expirationDate)
+					.build();
 		} catch (JOSEException e) {
 			e.printStackTrace();
 			throw new RuntimeException(e.getCause());
 		}
 	}
-
+	
 	public Mono<AuthResultDto> authenticate(Mono<UserLoginDto> userLoginMono) {
 		return userLoginMono.flatMap(userLogin -> {
-			return userRepository.findById(userLogin.getUsername()).filter(User::isEnabled)
+			return userRepository.findById(userLogin.getUsername())
+					.filter(User::isEnabled)
 					.filter(user -> passwordEncoder.matches(userLogin.getPassword(), user.getPassword()))
 					.map(this::generateAccessToken)
 					.switchIfEmpty(Mono.error(new FailedLoginException("Failed Login!")));

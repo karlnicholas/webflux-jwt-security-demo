@@ -22,8 +22,9 @@ public class ApplicationRouter {
         		RouterFunctions.nest(POST("/api/auth").and(contentType(MediaType.APPLICATION_JSON)), 
     				RouterFunctions.route(path("/signup"), publicHandler::handleNewUser)
     				.andRoute(path("/signin"), authHandler::handleLogin))
+			.andRoute(GET("/verifyToken"), authHandler::verifyToken)
 			.andRoute(GET("/public/version"), publicHandler::handleVersion)
-			.andRoute(GET("/user"), userHandler::handleUser));
+			.andRoute(GET("/profile"), userHandler::handleUser));
         		
 //		return RouterFunctions.route(POST("/signin").and(accept(MediaType.APPLICATION_JSON)), authHandler::handleLogin)
 //    		.andRoute(POST("/api/auth/signup").and(accept(MediaType.APPLICATION_JSON)), publicHandler::handleDemoUser)
