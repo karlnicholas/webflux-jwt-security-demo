@@ -25,13 +25,13 @@ function Dashboard(props) {
   function showProfile() {
 	  if ( profile != null ) {
 		  return (
-				  <div>
+			  <div>
 				  <p>Username: {profile.username}</p>
 				  <p>First: {profile.first_name}</p>
 				  <p>Last: {profile.last_name}</p>
 				  <p>Enabled: {profile.enabled.toString()}</p>
-				  </div>
-			  );
+			  </div>
+		  );
 	  }
   }
   
