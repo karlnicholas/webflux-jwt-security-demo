@@ -1,9 +1,9 @@
 package com.github.karlnicholas.webfluxjwtsecurity.service;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.github.karlnicholas.webfluxjwtsecurity.configuration.JwtProperties;
 import com.github.karlnicholas.webfluxjwtsecurity.dto.AuthResultDto;
 import com.github.karlnicholas.webfluxjwtsecurity.dto.UserLoginDto;
 import com.github.karlnicholas.webfluxjwtsecurity.model.User;
@@ -17,7 +17,6 @@ import javax.security.auth.login.AccountLockedException;
 import javax.security.auth.login.FailedLoginException;
 
 import com.nimbusds.jose.*;
-import com.nimbusds.jose.crypto.*;
 import com.nimbusds.jwt.*;
 
 /**
@@ -30,13 +29,10 @@ import com.nimbusds.jwt.*;
 public class AuthService {
 	private final UserRepository userRepository;
 	private final PasswordEncoder passwordEncoder;
-	private final byte[] sharedSecret;
+	private final JwtProperties jwtProperties;
 
-	@Value("${jwt.expiration}")
-	private String defaultExpirationTimeInSecondsConf;
-
-	public AuthService(byte[] sharedSecret, UserRepository userRepository, PasswordEncoder passwordEncoder) {
-		this.sharedSecret = sharedSecret;
+	public AuthService(JwtProperties jwtProperties, UserRepository userRepository, PasswordEncoder passwordEncoder) {
+		this.jwtProperties = jwtProperties;
 		this.userRepository = userRepository;
 		this.passwordEncoder = passwordEncoder;
 	}
@@ -44,14 +40,11 @@ public class AuthService {
 	private AuthResultDto generateAccessToken(User user) {
 		var claims = new HashMap<String, Object>();
 		claims.put("role", user.getRoles());
-		var expirationTimeInMilliseconds = Long.parseLong(defaultExpirationTimeInSecondsConf) * 1000;
+		var expirationTimeInMilliseconds = jwtProperties.getExpiration() * 1000;
 		var expirationDate = new Date(new Date().getTime() + expirationTimeInMilliseconds);
 		var createdDate = new Date();
 
 		try {
-
-			// Create HMAC signer
-			JWSSigner signer = new MACSigner(sharedSecret);
 
 			// Prepare JWT with claims set
 			JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
@@ -64,7 +57,7 @@ public class AuthService {
 			SignedJWT signedJWT = new SignedJWT(new JWSHeader(JWSAlgorithm.HS256), claimsSet);
 
 			// Apply the HMAC protection
-			signedJWT.sign(signer);
+			signedJWT.sign(jwtProperties.getJWSSigner());
 
 			// Serialize to compact form, produces something like
 			// eyJhbGciOiJIUzI1NiJ9.SGVsbG8sIHdvcmxkIQ.onO9Ihudz3WkiauDO2Uhyuz0Y18UASXlSc1eS0NkWyA
@@ -83,14 +76,19 @@ public class AuthService {
 	}
 
 	public Mono<AuthResultDto> authenticate(Mono<UserLoginDto> userLoginMono) {
-		return userLoginMono.flatMap(userLogin -> {
-			return userRepository.findByUsername(userLogin.getUsername()).flatMap(user -> {
-				if (!user.isEnabled())
-					return Mono.error(new AccountLockedException("Account disabled."));
-				if (!passwordEncoder.matches(userLogin.getPassword(), user.getPassword()))
-					return Mono.error(new FailedLoginException("Failed Login!"));
-				return Mono.just(generateAccessToken(user));
-			});
+		return userLoginMono.flatMap(userLogin->{
+			return loginUserAccount(userLogin.getUsername(), userLogin.getPassword())
+					.map(this::generateAccessToken);
 		}).switchIfEmpty(Mono.error(new FailedLoginException("Failed Login!")));
+	}
+
+	public Mono<User> loginUserAccount(String username, String password) {
+		return userRepository.findByUsername(username).flatMap(user -> {
+			if (!user.isEnabled())
+				return Mono.error(new AccountLockedException("Account disabled."));
+			if (!passwordEncoder.matches(password, user.getPassword()))
+				return Mono.error(new FailedLoginException("Failed Login!"));
+			return Mono.just(user);
+		});
 	}
 }

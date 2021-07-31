@@ -1,8 +1,5 @@
 package com.github.karlnicholas.webfluxjwtsecurity;
 
-import java.security.SecureRandom;
-
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
@@ -40,21 +37,4 @@ public class WebfluxSecurityApplication {
         return new BCryptPasswordEncoder();
     }
 
-	private byte[] sharedSecret = null; 
-
-	@Value("${jwt.shared_secret_hex}")
-	private String sharedSecretHex;
-
-    @Bean
-    public byte[] getSecret() {
-    	if ( sharedSecret == null ) {
-    		sharedSecret = new byte[32];
-    		int l = sharedSecretHex.length()/2;
-    		for (int i = 0; i < l; i++) {
-			   int j = Integer.parseInt(sharedSecretHex.substring(i*2, i*2+2), 16);
-			   sharedSecret[i] = (byte) j;
-			}
-		}
-    	return sharedSecret;
-    }
 }

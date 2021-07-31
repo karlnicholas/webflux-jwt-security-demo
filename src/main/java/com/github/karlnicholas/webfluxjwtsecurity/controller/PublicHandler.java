@@ -20,7 +20,7 @@ public class PublicHandler {
         this.userMapper = userMapper;
     }
 
-	public Mono<ServerResponse> handleDemoUser(ServerRequest serverRequest) {
+	public Mono<ServerResponse> handleNewUser(ServerRequest serverRequest) {
 		return ServerResponse.ok().body(serverRequest.bodyToMono(UserDto.class)
 				.map(userMapper::mapToDto)
 				.flatMap(userService::createUser)
