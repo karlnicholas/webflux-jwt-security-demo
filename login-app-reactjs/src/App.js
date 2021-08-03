@@ -3,11 +3,9 @@ import { BrowserRouter, Switch, Route, NavLink } from 'react-router-dom';
 import axios from 'axios';
 
 import Login from './Login';
-import Dashboard from './Dashboard';
+import User from './User';
 import Home from './Home';
 
-import PrivateRoute from './Utils/PrivateRoute';
-import PublicRoute from './Utils/PublicRoute';
 import { getToken, removeUserSession, setUserSession } from './Utils/Common';
 
 function App() {
@@ -16,6 +14,7 @@ function App() {
   useEffect(() => {
     const token = getToken();
     if (!token) {
+      setAuthLoading(false);
       return;
     }
 
@@ -31,21 +30,20 @@ function App() {
   if (authLoading && getToken()) {
     return <div className="content">Checking Authentication...</div>
   }
-
+  
   return (
     <div className="App">
       <BrowserRouter>
         <div>
           <div className="header">
             <NavLink exact activeClassName="active" to="/">Home</NavLink>
-            <NavLink activeClassName="active" to="/login">Login</NavLink>
-            <NavLink activeClassName="active" to="/dashboard">Dashboard</NavLink>
+            <NavLink activeClassName="active" to="/user">User</NavLink>
           </div>
           <div className="content">
             <Switch>
               <Route exact path="/" component={Home} />
-              <PublicRoute path="/login" component={Login} />
-              <PrivateRoute path="/dashboard" component={Dashboard} />
+              <Route exact path="/user" component={User} />
+              <Route exact path="/login" component={Login} />
             </Switch>
           </div>
         </div>

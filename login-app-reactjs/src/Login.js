@@ -15,11 +15,10 @@ function Login(props) {
     axios.post('http://localhost:8080/api/auth/signin', { username: username.value, password: password.value }).then(response => {
       setLoading(false);
       setUserSession(response.data.token, response.data.user);
-      props.history.push('/dashboard');
+      props.history.push('/user');
     }).catch(error => {
       setLoading(false);
-      if (error.response.status === 401) setError(error.response.data.message);
-      else setError("Something went wrong. Please try again later.");
+      setError("Login attempt failed.");
     });
   }
 

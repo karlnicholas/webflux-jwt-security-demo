@@ -63,6 +63,9 @@ public class JwtProperties {
     }
 
 	public Optional<SignedJWT> verifyToken(String token) {
+		if ( token == null || token.isEmpty()) {
+			return Optional.empty();
+		}
 		// On the consumer side, parse the JWS and verify its HMAC
 		try {
 			SignedJWT signedJWT = SignedJWT.parse(token);

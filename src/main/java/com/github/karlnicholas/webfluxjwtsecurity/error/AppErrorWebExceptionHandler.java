@@ -25,29 +25,25 @@ import com.nimbusds.jose.JOSEException;
  */
 @Component
 public class AppErrorWebExceptionHandler extends AbstractErrorWebExceptionHandler {
-    public AppErrorWebExceptionHandler(ErrorAttributes g, ApplicationContext applicationContext, ServerCodecConfigurer serverCodecConfigurer) {
-        super(g, new WebProperties.Resources(), applicationContext);
-        super.setMessageWriters(serverCodecConfigurer.getWriters());
-        super.setMessageReaders(serverCodecConfigurer.getReaders());
-    }
+	public AppErrorWebExceptionHandler(ErrorAttributes g, ApplicationContext applicationContext,
+			ServerCodecConfigurer serverCodecConfigurer) {
+		super(g, new WebProperties.Resources(), applicationContext);
+		super.setMessageWriters(serverCodecConfigurer.getWriters());
+		super.setMessageReaders(serverCodecConfigurer.getReaders());
+	}
 
-    @Override
-    protected RouterFunction<ServerResponse> getRoutingFunction(final ErrorAttributes errorAttributes) {
-        return RouterFunctions.route(POST("/api/auth/signin"), request -> {
-            var error = getError(request);
-            if (error instanceof SecurityException 
-            		|| error instanceof JOSEException
-            		|| error instanceof AccountLockedException
-            		|| error instanceof FailedLoginException
-    		) {
-                return ServerResponse.status(HttpStatus.UNAUTHORIZED)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .body(BodyInserters.fromValue(error.getMessage()));
-            } else {
-                return ServerResponse.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .body(BodyInserters.fromValue(error.getMessage()));
-            }
-        });
-    }
+	@Override
+	protected RouterFunction<ServerResponse> getRoutingFunction(final ErrorAttributes errorAttributes) {
+		return RouterFunctions.route(POST("/api/auth/signin"), request -> {
+			var error = getError(request);
+			if (error instanceof SecurityException || error instanceof JOSEException
+					|| error instanceof AccountLockedException || error instanceof FailedLoginException) {
+				return ServerResponse.status(HttpStatus.UNAUTHORIZED).contentType(MediaType.APPLICATION_JSON)
+						.body(BodyInserters.fromValue(error.getMessage()));
+			} else {
+				return ServerResponse.status(HttpStatus.INTERNAL_SERVER_ERROR).contentType(MediaType.APPLICATION_JSON)
+						.body(BodyInserters.fromValue(error.getMessage()));
+			}
+		});
+	}
 }
