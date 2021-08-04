@@ -21,5 +21,6 @@ public interface UserMapper {
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "roles", ignore = true)
+	@Mapping(target = "isNew", ignore = true)
     User mapToUser(UserDto userDto);
 }
