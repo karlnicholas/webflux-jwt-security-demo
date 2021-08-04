@@ -96,9 +96,10 @@ public class WebSecurityConfig {
 						SimpleGrantedAuthority simpleGrantedAuthority = new SimpleGrantedAuthority((String) jsonArray.get(0));
 						return new UsernamePasswordAuthenticationToken(signedJWT.getJWTClaimsSet().getSubject(), null, Collections.singletonList(simpleGrantedAuthority));
 					} catch (ParseException e) {
-						throw new RuntimeException(e);
+						e.printStackTrace();
+						return null;
 					}
-				}).orElseThrow();
+				}).orElseGet(() -> null);
 			}).orElseGet(() -> null));
 		});
 		authenticationFilter.setRequiresAuthenticationMatcher(ServerWebExchangeMatchers.pathMatchers("/**"));
