@@ -20,7 +20,6 @@ import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.security.web.server.authentication.AuthenticationWebFilter;
-import org.springframework.security.web.server.util.matcher.PathPatternParserServerWebExchangeMatcher;
 import org.springframework.security.web.server.util.matcher.ServerWebExchangeMatchers;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.reactive.CorsConfigurationSource;
@@ -63,7 +62,6 @@ public class WebSecurityConfig {
 			.csrf().disable()
 			.httpBasic().disable()
 			.formLogin().disable()
-			.logout(logout -> logout.requiresLogout(new PathPatternParserServerWebExchangeMatcher("/logout")))
 			.exceptionHandling().authenticationEntryPoint((swe, e) -> {
 				logger.info("[1] Authentication error: Unauthorized[401]: " + e.getMessage());
 				return Mono.fromRunnable(() -> swe.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED));
